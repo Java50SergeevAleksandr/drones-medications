@@ -8,6 +8,8 @@ import telran.drones.dto.*;
 @Table(name = "drones")
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString
+@Getter
 public class Drone {
 	@Id
 	@Column(length = 100, name = "drone_number")
@@ -15,11 +17,13 @@ public class Drone {
 
 	@ManyToOne
 	@JoinColumn(name = "model_name")
+	@Setter
 	DroneModel model;
 
 	@Column(name = "battery_capacity")
 	int batteryCapacity;
 
+	@Setter
 	@Enumerated(EnumType.STRING)
 	State state;
 
