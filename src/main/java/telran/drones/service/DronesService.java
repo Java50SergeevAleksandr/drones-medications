@@ -6,7 +6,7 @@ public interface DronesService {
 	/**
 	 * adds new Drone into Database
 	 * 
-	 * @ @param droneDto
+	 * @param droneDto
 	 * @return DroneDto for success
 	 * @throws DroneIllegalStateException (drone with a given number already exists)
 	 */
