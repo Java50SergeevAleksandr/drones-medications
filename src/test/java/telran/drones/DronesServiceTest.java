@@ -33,13 +33,13 @@ class DronesServiceTest {
 
 	@Autowired
 	DronesService dronesService;
-	
+
 	@Autowired
 	DronesRepo droneRepo;
-	
+
 	@Autowired
 	EventLogRepo logRepo;
-	
+
 	DroneDto droneDto = new DroneDto(DRONE4, ModelType.Cruiserweight);
 	DroneDto droneDto1 = new DroneDto(DRONE1, ModelType.Middleweight);
 	DroneMedication droneMedication1 = new DroneMedication(DRONE1, MED1);
@@ -84,7 +84,7 @@ class DronesServiceTest {
 	@DisplayName(SERVICE_TEST + TestDisplayNames.REGISTER_DRONE_NORMAL)
 	void registerDroneNormal() {
 		assertEquals(droneDto, dronesService.registerDrone(droneDto));
-		assertNotNull(droneRepo.findById(DRONE4).orElse(null));
+		assertTrue(droneRepo.existsById(DRONE4));
 
 	}
 
