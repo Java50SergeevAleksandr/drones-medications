@@ -7,4 +7,5 @@ public interface ServiceExceptionMessages {
 	String LOW_BATTERY_CAPACITY = "Low battery capacity, below 25%";
 	String WEIGHT_LIMIT_VIOLATION = "Drone weight limit exceeded";
 	String DRONE_ALREADY_EXISTS = "Drone already exists";
+	String MODEL_NOT_FOUND = "Model not found exception";
 }
