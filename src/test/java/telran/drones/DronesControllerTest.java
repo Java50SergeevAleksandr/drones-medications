@@ -24,7 +24,7 @@ import telran.drones.dto.DroneDto;
 import telran.drones.dto.DroneMedication;
 import telran.drones.dto.ModelType;
 import telran.drones.exceptions.*;
-import telran.drones.exceptions.controller.DronesExceptionsController;
+import telran.exceptions.controller.DronesExceptionsController;
 import telran.drones.service.DronesService;
 
 record DroneDtoWrongEnum(String number, String modelType) {
@@ -33,6 +33,7 @@ record DroneDtoWrongEnum(String number, String modelType) {
 
 @WebMvcTest
 class DronesControllerTest {
+
 	@Autowired
 	MockMvc mockMvc;
 
@@ -42,6 +43,7 @@ class DronesControllerTest {
 	@Autowired
 	ObjectMapper mapper;
 
+	private static final String CONTROLLER_TEST = "Controller:";
 	private static final String HOST = UrlConstants.HOST;
 	private static final String DRONE_NUMBER_1 = "DRONE-1";
 	private static final String MEDICATION_CODE = "MED_1";
@@ -65,7 +67,7 @@ class DronesControllerTest {
 			DronesValidationErrorMessages.EMPTY_MEDICATION_CODE, };
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.REGISTER_DRONE_NORMAL)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.REGISTER_DRONE_NORMAL)
 	void droneRegister_normalFlow_success() throws Exception {
 		when(dronesService.registerDrone(droneDto1)).thenReturn(droneDto1);
 		String droneJSON = mapper.writeValueAsString(droneDto1);
@@ -76,7 +78,7 @@ class DronesControllerTest {
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.REGISTER_DRONE_MISSING_FIELDS)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.REGISTER_DRONE_MISSING_FIELDS)
 	void droneRegister_missingFields_errorMessage() throws Exception {
 		String droneJSON = mapper.writeValueAsString(droneDtoMissingFields);
 		String response = mockMvc
@@ -93,7 +95,7 @@ class DronesControllerTest {
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.REGISTER_DRONE_VALIDATION_VIOLATION)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.REGISTER_DRONE_VALIDATION_VIOLATION)
 	void droneRegister_wrongFields_errorMessage() throws Exception {
 		String droneJSON = mapper.writeValueAsString(droneDtoWrongFields);
 		String response = mockMvc
@@ -103,7 +105,7 @@ class DronesControllerTest {
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.REGISTER_DRONE_ALREADY_EXISTS)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.REGISTER_DRONE_ALREADY_EXISTS)
 	void droneRegister_alreadyExists_exception() throws Exception {
 		when(dronesService.registerDrone(droneDto1)).thenThrow(new DroneAlreadyExistException());
 		String droneJSON = mapper.writeValueAsString(droneDto1);
@@ -115,7 +117,7 @@ class DronesControllerTest {
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.LOAD_DRONE_NORMAL)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.LOAD_DRONE_NORMAL)
 	void loadMedication_normalFlow_success() throws Exception {
 		when(dronesService.loadDrone(droneMedication)).thenReturn(droneMedication);
 		String droneMedicationJSON = mapper.writeValueAsString(droneMedication);
@@ -127,35 +129,35 @@ class DronesControllerTest {
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.LOAD_DRONE_MEDICATION_NOT_FOUND)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.LOAD_DRONE_MEDICATION_NOT_FOUND)
 	void loadMedicationMedicationNotFound() throws Exception {
 		serviceExceptionRequest(new MedicationNotFoundException(), 404, ServiceExceptionMessages.MEDICATION_NOT_FOUND);
 
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.LOAD_DRONE_NOT_FOUND)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.LOAD_DRONE_NOT_FOUND)
 	void loadMedicationDroneNotFound() throws Exception {
 		serviceExceptionRequest(new DroneNotFoundException(), 404, ServiceExceptionMessages.DRONE_NOT_FOUND);
 
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.LOAD_DRONE_LOW_BATTERY_CAPCITY)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.LOAD_DRONE_LOW_BATTERY_CAPCITY)
 	void loadMedicationLowBatteryCapacity() throws Exception {
 		serviceExceptionRequest(new LowBatteryCapacityException(), 400, ServiceExceptionMessages.LOW_BATTERY_CAPACITY);
 
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.LOAD_DRONE_NOT_MATCHING_STATE)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.LOAD_DRONE_NOT_MATCHING_STATE)
 	void loadMedicationNotMatchingState() throws Exception {
 		serviceExceptionRequest(new IllegalDroneStateException(), 400, ServiceExceptionMessages.NOT_IDLE_STATE);
 
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.LOAD_DRONE_NOT_MATCHING_WEIGHT)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.LOAD_DRONE_NOT_MATCHING_WEIGHT)
 	void loadMedicationNotMatchingWeight() throws Exception {
 		serviceExceptionRequest(new IllegalMedicationWeightException(), 400,
 				ServiceExceptionMessages.WEIGHT_LIMIT_VIOLATION);
@@ -163,13 +165,13 @@ class DronesControllerTest {
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.LOAD_DRONE_WRONG_FIELDS)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.LOAD_DRONE_WRONG_FIELDS)
 	void loadMedicationWrongFields() throws Exception {
 		validationExceptionRequest(errorMessagesDroneMedicationWrongFields, droneMedicationWrongFields);
 	}
 
 	@Test
-	@DisplayName("Controller:" + TestDisplayNames.LOAD_DRONE_MISSING_FIELDS)
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.LOAD_DRONE_MISSING_FIELDS)
 	void loadMedicationMissingFields() throws Exception {
 		validationExceptionRequest(errorMessagesDroneMedicationMissingFields, droneMedicationMissingFields);
 	}

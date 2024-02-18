@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import static telran.drones.api.DronesValidationErrorMessages.*;
+import static telran.drones.api.ConstraintConstants.*;
 
 public record DroneDto(
 		@Size(max = MAX_DRONE_NUMBER_LENGTH, message = DRONE_NUMBER_WRONG_LENGTH) @NotEmpty(message = EMPTY_DRONE_NUMBER_MESSAGE) String number,

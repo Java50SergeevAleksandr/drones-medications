@@ -7,12 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "medication")
+@Table(name = "medications")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @ToString
 public class Medication {
+	@Id
+	@Column(name = "medication_code")
+	String code;
 
 	@Column(name = "medication_name", nullable = false)
 	String name;
@@ -20,7 +23,4 @@ public class Medication {
 	@Column(nullable = false)
 	int weight;
 
-	@Id
-	@Column(name = "medication_code")
-	String code;
 }

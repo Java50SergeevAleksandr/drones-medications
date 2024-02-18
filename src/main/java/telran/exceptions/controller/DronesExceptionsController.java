@@ -1,4 +1,4 @@
-package telran.drones.exceptions.controller;
+package telran.exceptions.controller;
 
 import java.util.stream.Collectors;
 
@@ -12,7 +12,7 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import lombok.extern.slf4j.Slf4j;
-import telran.drones.exceptions.NotFoundException;
+import telran.exceptions.NotFoundException;
 
 @Slf4j
 @ControllerAdvice
