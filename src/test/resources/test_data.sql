@@ -17,4 +17,5 @@ insert into drones (drone_number, model_name,  battery_capacity, state)
 insert into medications (medication_code, medication_name, weight)
 	values 
 		('MED_1', 'Medication-1', 200),
-		('MED_2', 'Medication-2', 350)	;
+		('MED_2', 'Medication-2', 350),
+		('MED_3', 'Medication-2', 300)		;

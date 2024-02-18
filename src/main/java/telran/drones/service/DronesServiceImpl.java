@@ -1,7 +1,8 @@
 package telran.drones.service;
 
 import java.time.LocalDateTime;
-
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -84,6 +85,48 @@ public class DronesServiceImpl implements DronesService {
 		log.debug("saved log: {}", eventLog);
 
 		return droneMedication;
+	}
+
+	@Override
+	public List<String> checkMedicationItems(String droneNumber) {
+		Drone drone = droneRepo.findById(droneNumber).orElseThrow(() -> new DroneNotFoundException());
+		log.debug("drone exists: {}", drone);
+		List<EventLog> list = logRepo.findByDroneNumber(droneNumber);
+		List<String> res = list.stream().map(el -> el.getMedicationCode()).collect(Collectors.toList());
+
+		if (res.isEmpty()) {
+			log.warn("list of Medication Items for droneNumber{} is emty", droneNumber);
+		} else {
+			log.debug("get list Medication Items: {}", res);
+		}
+		return res;
+	}
+
+	@Override
+	public List<String> checkAvailableDrones() {
+		List<Drone> list = droneRepo.findByState();
+		List<String> res = list.stream().map(d -> d.getNumber()).collect(Collectors.toList());
+		if (res.isEmpty()) {
+			log.warn("list of Available Drones is emty");
+		} else {
+			log.debug("get list of Available Drones: {}", res);
+		}
+		return res;
+	}
+
+	@Override
+	public int checkBatteryCapacity(String droneNumber) {
+		Drone drone = droneRepo.findById(droneNumber).orElseThrow(() -> new DroneNotFoundException());
+		int res = drone.getBatteryCapacity();
+		log.debug("Battery Capacity for Drone {}  is : {}%", drone, res);
+		return res;
+	}
+
+	@Override
+	public List<DroneItemsAmount> checkDroneLoadedItemAmounts() {
+		List<DroneItemsAmount> list = logRepo.findDroneLoadedItemAmounts();
+		list.forEach(d -> log.debug("drone number is {}, amount of items {}", d.getNumber(), d.getAmount()));
+		return list;
 	}
 
 }

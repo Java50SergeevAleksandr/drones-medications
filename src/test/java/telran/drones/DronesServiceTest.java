@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
+import jakarta.transaction.Transactional;
+
 @SpringBootTest(properties = { PropertiesNames.PERIODIC_UNIT_MILLIS + "=1000000" })
 @Sql(scripts = "classpath:test_data.sql")
 class DronesServiceTest {
@@ -28,6 +30,7 @@ class DronesServiceTest {
 
 	private static final String MED1 = "MED_1";
 	private static final String MED2 = "MED_2";
+	private static final String MED3 = "MED_3";
 
 	private static final String SERVICE_TEST = "Service: ";
 
@@ -43,6 +46,8 @@ class DronesServiceTest {
 	DroneDto droneDto = new DroneDto(DRONE4, ModelType.Cruiserweight);
 	DroneDto droneDto1 = new DroneDto(DRONE1, ModelType.Middleweight);
 	DroneMedication droneMedication1 = new DroneMedication(DRONE1, MED1);
+	DroneMedication droneMedication2 = new DroneMedication(DRONE1, MED2);
+	DroneMedication droneMedication3 = new DroneMedication(DRONE1, MED3);
 
 	@Test
 	@DisplayName(SERVICE_TEST + TestDisplayNames.LOAD_DRONE_NORMAL)
@@ -94,4 +99,43 @@ class DronesServiceTest {
 		assertThrowsExactly(DroneAlreadyExistException.class, () -> dronesService.registerDrone(droneDto1));
 	}
 
+	@Test
+	@DisplayName(SERVICE_TEST + TestDisplayNames.CHECK_BATTERY_CAPACITY_NORMAL)
+	void checkBatteryCapacity_normalFlow_success() {
+		assertEquals(droneRepo.findById(DRONE2).get().getBatteryCapacity(), dronesService.checkBatteryCapacity(DRONE2));
+	}
+
+	@Test
+	@DisplayName(SERVICE_TEST + TestDisplayNames.CHECK_BATTERY_CAPACITY_DRONE_NOT_EXISTS)
+	void checkBatteryCapacity_droneNotExists_exception() {
+		assertThrowsExactly(DroneNotFoundException.class, () -> dronesService.checkBatteryCapacity(DRONE4));
+	}
+
+	@Test
+	@DisplayName(SERVICE_TEST + TestDisplayNames.CHECK_MEDICATION_ITEMS_NORMAL)
+	@Transactional
+	void checkMedicationItems_normalFlow_success() {
+		Drone drone = droneRepo.findById(DRONE1).get();
+		dronesService.loadDrone(droneMedication1);
+		drone.setState(State.IDLE);
+		dronesService.loadDrone(droneMedication3);
+		drone.setState(State.IDLE);
+		dronesService.loadDrone(droneMedication1);
+		List<String> exp = List.of(MED1, MED3, MED1);
+		List<String> testList = dronesService.checkMedicationItems(DRONE1);
+		assertEquals(exp, testList);
+	}
+
+	@Test
+	@DisplayName(SERVICE_TEST + TestDisplayNames.CHECK_MEDICATION_ITEMS_EMPTY)
+	void checkMedicationItems_emptyList_success() {
+		List<String> testList = dronesService.checkMedicationItems(DRONE1);
+		assertTrue(testList.isEmpty());
+	}
+
+	@Test
+	@DisplayName(SERVICE_TEST + TestDisplayNames.CHECK_MEDICATION_ITEMS_DRONE_NOT_EXISTS)
+	void checkMedicationItems_droneNotExists_exception() {
+		assertThrowsExactly(DroneNotFoundException.class, () -> dronesService.checkMedicationItems(DRONE4));
+	}
 }

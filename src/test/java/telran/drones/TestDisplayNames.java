@@ -22,4 +22,9 @@ public interface TestDisplayNames {
 	String CHECK_LOGS_DRONE_NOT_FOUND = "Checking Logs, Drone Not Found";
 	String CHECK_DRONES_ITEMS_AMOUNT = "Checking Drone Numbers and amounts of the loaded medication items";
 	String REGISTER_DRONE_WRONG_TYPE = "Registring Drone with JSON containing mismatch fields";
+	String CHECK_BATTERY_CAPACITY_NORMAL = "Check Battery Capacity Normal Flow";
+	String CHECK_BATTERY_CAPACITY_DRONE_NOT_EXISTS = "Drone Not Exists";
+	String CHECK_MEDICATION_ITEMS_NORMAL = "Check Medication Items Normal Flow";
+	String CHECK_MEDICATION_ITEMS_EMPTY = "Check Medication Items Empty List";
+	String CHECK_MEDICATION_ITEMS_DRONE_NOT_EXISTS = "Drone Not Exists";
 }

@@ -43,7 +43,7 @@ class DronesControllerTest {
 	@Autowired
 	ObjectMapper mapper;
 
-	private static final String CONTROLLER_TEST = "Controller:";
+	private static final String CONTROLLER_TEST = "Controller: ";
 	private static final String HOST = UrlConstants.HOST;
 	private static final String DRONE_NUMBER_1 = "DRONE-1";
 	private static final String MEDICATION_CODE = "MED_1";
