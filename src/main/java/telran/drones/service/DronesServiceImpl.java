@@ -2,7 +2,6 @@ package telran.drones.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -14,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import telran.drones.api.PropertiesNames;
 import telran.drones.dto.*;
 import telran.drones.dto.reflections.DroneItemsAmount;
+import telran.drones.dto.reflections.DroneNumber;
+import telran.drones.dto.reflections.MedicationCode;
 import telran.drones.exceptions.*;
 
 import telran.drones.model.*;
@@ -22,6 +23,7 @@ import telran.drones.repo.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class DronesServiceImpl implements DronesService {
 	final DronesRepo droneRepo;
 	final MedicationRepo medicationRepo;
@@ -35,7 +37,7 @@ public class DronesServiceImpl implements DronesService {
 	private int capacityDeltaPerTimeUnit;
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = false)
 	public DroneDto registerDrone(DroneDto droneDto) {
 		log.debug("service got drone DTO: {}", droneDto);
 
@@ -53,7 +55,7 @@ public class DronesServiceImpl implements DronesService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = false)
 	public DroneMedication loadDrone(DroneMedication droneMedication) {
 		String droneNumber = droneMedication.droneNumber();
 		String medicationCode = droneMedication.medicationCode();
@@ -90,37 +92,39 @@ public class DronesServiceImpl implements DronesService {
 
 	@Override
 	public List<String> checkMedicationItems(String droneNumber) {
-		Drone drone = droneRepo.findById(droneNumber).orElseThrow(() -> new DroneNotFoundException());
-		log.debug("drone exists: {}", drone);
-		List<EventLog> list = logRepo.findByDroneNumber(droneNumber);
-		List<String> res = list.stream().map(el -> el.getMedicationCode()).collect(Collectors.toList());
+		if (!droneRepo.existsById(droneNumber)) {
+			throw new DroneNotFoundException();
+		}
+		log.debug("drone exists: {}", droneNumber);
+		List<MedicationCode> codes = logRepo.findByDroneNumber(droneNumber);
+		List<String> res = codes.stream().map(MedicationCode::getMedicationCode).toList();
 
 		if (res.isEmpty()) {
 			log.warn("list of Medication Items for droneNumber{} is emty", droneNumber);
 		} else {
-			log.debug("get list Medication Items: {}", res);
+			log.debug("get list Medication Items on drone {} are : {}", droneNumber, res);
 		}
 		return res;
 	}
 
 	@Override
 	public List<String> checkAvailableDrones() {
-		List<Drone> list = droneRepo.findByState();
-		List<String> res = list.stream().map(d -> d.getNumber()).collect(Collectors.toList());
-		if (res.isEmpty()) {
-			log.warn("list of Available Drones is emty");
-		} else {
-			log.debug("get list of Available Drones: {}", res);
-		}
+		List<DroneNumber> numbers = droneRepo.findByStateAndBatteryCapacityGreaterThanEqual(State.IDLE,
+				capacityThreshold);
+		List<String> res = numbers.stream().map(DroneNumber::getNumber).toList();
+		log.debug("Available drones are {}", res);
 		return res;
 	}
 
 	@Override
 	public int checkBatteryCapacity(String droneNumber) {
-		Drone drone = droneRepo.findById(droneNumber).orElseThrow(() -> new DroneNotFoundException());
-		int res = drone.getBatteryCapacity();
-		log.debug("Battery Capacity for Drone {}  is : {}%", drone, res);
-		return res;
+		Integer batteryCapacity = droneRepo.findBatteryCapacity(droneNumber);
+		if (batteryCapacity == null) {
+			throw new DroneNotFoundException();
+		}
+
+		log.debug("battery capacity of drone {} is {}", droneNumber, batteryCapacity);
+		return batteryCapacity;
 	}
 
 	@Override
