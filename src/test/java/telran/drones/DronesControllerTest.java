@@ -100,9 +100,9 @@ class DronesControllerTest {
 	@Test
 	@DisplayName(CONTROLLER_TEST + TestDisplayNames.CHECK_DRONES_ITEMS_AMOUNT)
 	void checkDronesItemsAmount_normalFlow_success() throws Exception {
-		DroneItemsAmountImpl[] droneItemsExpected = { new DroneItemsAmountImpl("DRONE-1", 10),
-				new DroneItemsAmountImpl("DRONE-2", 9), new DroneItemsAmountImpl("DRONE-3", 8),
-				new DroneItemsAmountImpl("DRONe-4", 0) };
+		DroneItemsAmountImpl[] droneItemsExpected = { new DroneItemsAmountImpl("DRONE-1", 1),
+				new DroneItemsAmountImpl("DRONE-2", 2), new DroneItemsAmountImpl("DRONE-3", 8),
+				new DroneItemsAmountImpl("DRONE-4", 0) };
 		String expectedJSON = mapper.writeValueAsString(droneItemsExpected);
 		when(dronesService.checkDroneLoadedItemAmounts()).thenReturn(List.of(droneItemsExpected));
 		String response = getMethodWithResponse(URL_ITEMS_AMOUNT);
