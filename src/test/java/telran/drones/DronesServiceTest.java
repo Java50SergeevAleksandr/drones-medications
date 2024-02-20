@@ -47,6 +47,17 @@ class DronesServiceTest {
 	DroneMedication droneMedication1 = new DroneMedication(DRONE1, MED1);
 	DroneMedication droneMedication2 = new DroneMedication(DRONE1, MED2);
 	DroneMedication droneMedication3 = new DroneMedication(DRONE1, MED3);
+	DroneMedication droneMedication4 = new DroneMedication(DRONE2, MED1);
+	DroneMedication droneMedication5 = new DroneMedication(DRONE3, MED1);
+
+	@Test
+	@DisplayName(SERVICE_TEST + TestDisplayNames.PERIODIC_TASK)
+	void periodicTaskTest() throws InterruptedException {
+		dronesService.loadDrone(droneMedication3);
+		Thread.sleep(12000);
+		dronesService.loadDrone(droneMedication4);
+		Thread.sleep(10000);
+	}
 
 	@Test
 	@DisplayName(SERVICE_TEST + TestDisplayNames.LOAD_DRONE_NORMAL)
@@ -66,8 +77,9 @@ class DronesServiceTest {
 	@Test
 	@DisplayName(SERVICE_TEST + TestDisplayNames.LOAD_DRONE_NOT_MATCHING_STATE)
 	void loadDroneWrongState() {
+		dronesService.loadDrone(droneMedication1);
 		assertThrowsExactly(IllegalDroneStateException.class,
-				() -> dronesService.loadDrone(new DroneMedication(DRONE3, MED1)));
+				() -> dronesService.loadDrone(new DroneMedication(DRONE1, MED1)));
 	}
 
 	@Test
@@ -141,10 +153,11 @@ class DronesServiceTest {
 	@Test
 	@DisplayName(SERVICE_TEST + TestDisplayNames.AVAILABLE_DRONES)
 	void checkAvailableDrones_normalFlow_success() {
-		List<String> availableExpected = List.of(DRONE1);
+		List<String> availableExpected = List.of(DRONE1, DRONE3);
 		List<String> availableActual = dronesService.checkAvailableDrones();
 		assertIterableEquals(availableExpected, availableActual);
 		dronesService.loadDrone(droneMedication1);
+		dronesService.loadDrone(droneMedication5);
 		assertTrue(dronesService.checkAvailableDrones().isEmpty());
 	}
 

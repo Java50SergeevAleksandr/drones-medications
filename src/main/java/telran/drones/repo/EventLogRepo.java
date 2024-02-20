@@ -14,6 +14,11 @@ public interface EventLogRepo extends JpaRepository<EventLog, Long> {
 	List<MedicationCode> findByDroneNumber(String droneNumber);
 
 	@Query("""
+			select medicationCode from EventLog where droneNumber =:droneNumber order by id desc limit 1
+			""")
+	String findLastMedicationCode(String droneNumber);
+
+	@Query("""
 			select d.number as number, count(e.droneNumber) as amount
 			from Drone as d left join EventLog as e on e.droneNumber = d.number
 			group by d.number

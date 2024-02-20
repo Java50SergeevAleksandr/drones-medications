@@ -2,9 +2,11 @@ package telran.drones.service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
-
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ import telran.drones.repo.*;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
+@EnableScheduling
 public class DronesServiceImpl implements DronesService {
 	final DronesRepo droneRepo;
 	final MedicationRepo medicationRepo;
@@ -34,8 +37,67 @@ public class DronesServiceImpl implements DronesService {
 	@Value("${" + PropertiesNames.CAPACITY_THRESHOLD + ":25}")
 	int capacityThreshold;
 
+//	@Value("${" + PropertiesNames.PERIODIC_DELTA_MILLIS_UNIT + ":1000}")
+//	String periodicTimeDelta;
+
 	@Value("${" + PropertiesNames.CAPACITY_DELTA_TIME_UNIT + ":2}")
 	private int capacityDeltaPerTimeUnit;
+
+	@Value("${" + PropertiesNames.MAX_CAPACITY + ":100}")
+	private int maxCapacity;
+
+	@Scheduled(timeUnit = TimeUnit.MILLISECONDS, fixedDelayString = "${" + PropertiesNames.PERIODIC_DELTA_MILLIS_UNIT
+			+ ":1000}")
+	@Transactional(readOnly = false)
+	void periodicTask() {
+		List<Drone> listOfDrones = droneRepo.findAll();
+		listOfDrones.stream().forEach(d -> executeTask(d));
+	}
+
+	private void executeTask(Drone d) {
+		log.debug("periodic status on drone : {}", d);
+		State currentState = d.getState();
+		int currentBatteryCapacity = d.getBatteryCapacity();
+
+		if (currentState == State.IDLE && currentBatteryCapacity < maxCapacity) {
+			chargeBattery(d, currentState, currentBatteryCapacity);
+		}
+
+		if (currentState != State.IDLE) {
+			drainBatteryandChangeState(d, currentState, currentBatteryCapacity);
+		}
+	}
+
+	private void chargeBattery(Drone d, State currentState, int currentBatteryCapacity) {
+		log.debug("execute chargeBattery on drone : {}", d);
+		int newBatteryCapacity = currentBatteryCapacity + capacityDeltaPerTimeUnit;
+		d.setBatteryCapacity(Math.min(maxCapacity, newBatteryCapacity));
+		droneRepo.save(d);
+
+		EventLog eventLog = new EventLog(LocalDateTime.now(), d.getNumber(), currentState, newBatteryCapacity, null);
+		logRepo.save(eventLog);
+		log.debug("saved log: {}", eventLog);
+	}
+
+	private void drainBatteryandChangeState(Drone d, State currentState, int currentBatteryCapacity) {
+		log.debug("execute drain Battery and ChangeState on drone : {}", d);
+		int newBatteryCapacity = currentBatteryCapacity - capacityDeltaPerTimeUnit;
+		d.setBatteryCapacity(Math.max(0, newBatteryCapacity));
+		State newState = statesMachine.get(currentState);
+		d.setState(newState);
+		droneRepo.save(d);
+		String lastMedication = logRepo.findLastMedicationCode(d.getNumber());
+		log.debug("LastMedicationCode string : {}", lastMedication);
+
+		if (newState == State.DELIVERED) {
+			lastMedication = null;
+		}
+
+		EventLog eventLog = new EventLog(LocalDateTime.now(), d.getNumber(), newState, newBatteryCapacity,
+				lastMedication);
+		logRepo.save(eventLog);
+		log.debug("saved log: {}", eventLog);
+	}
 
 	@Override
 	@Transactional(readOnly = false)
