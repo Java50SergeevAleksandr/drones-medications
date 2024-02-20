@@ -1,7 +1,7 @@
 package telran.drones.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -29,6 +29,7 @@ public class DronesServiceImpl implements DronesService {
 	final MedicationRepo medicationRepo;
 	final EventLogRepo logRepo;
 	final DronesModelRepo droneModelRepo;
+	final Map<State, State> statesMachine;
 
 	@Value("${" + PropertiesNames.CAPACITY_THRESHOLD + ":25}")
 	int capacityThreshold;
