@@ -36,9 +36,6 @@ public class DronesServiceImpl implements DronesService {
 	@Value("${" + PropertiesNames.CAPACITY_THRESHOLD + ":25}")
 	int capacityThreshold;
 
-//	@Value("${" + PropertiesNames.PERIODIC_DELTA_MILLIS_UNIT + ":1000}")
-//	String periodicTimeDelta;
-
 	@Value("${" + PropertiesNames.CAPACITY_DELTA_TIME_UNIT + ":2}")
 	private int capacityDeltaPerTimeUnit;
 
