@@ -6,7 +6,7 @@ import telran.drones.exceptions.*;
 
 import telran.drones.repo.*;
 import telran.drones.service.DronesService;
-
+import telran.drones.api.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,7 +19,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import jakarta.transaction.Transactional;
 
-@SpringBootTest
+@SpringBootTest(properties= {PropertiesNames.PERIODIC_DELTA_MILLIS_UNIT + "=100000000"})
 @Sql(scripts = "classpath:test_data.sql")
 class DronesServiceTest {
 	private static final String DRONE1 = "Drone-1";
@@ -49,15 +49,6 @@ class DronesServiceTest {
 	DroneMedication droneMedication3 = new DroneMedication(DRONE1, MED3);
 	DroneMedication droneMedication4 = new DroneMedication(DRONE2, MED1);
 	DroneMedication droneMedication5 = new DroneMedication(DRONE3, MED1);
-
-	@Test
-	@DisplayName(SERVICE_TEST + TestDisplayNames.PERIODIC_TASK)
-	void periodicTaskTest() throws InterruptedException {
-		dronesService.loadDrone(droneMedication3);
-		Thread.sleep(12000);
-		dronesService.loadDrone(droneMedication4);
-		Thread.sleep(10000);
-	}
 
 	@Test
 	@DisplayName(SERVICE_TEST + TestDisplayNames.LOAD_DRONE_NORMAL)

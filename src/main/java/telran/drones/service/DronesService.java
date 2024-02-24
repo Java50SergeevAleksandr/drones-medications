@@ -61,4 +61,11 @@ public interface DronesService {
 	 * @return distribution projection
 	 */
 	List<DroneItemsAmount> checkDroneLoadedItemAmounts();
+
+	/**
+	 * 
+	 * @param droneNumber
+	 * @return data about all logs of the drone with a given number
+	 */
+	List<EventLogDto> checkHistoryLogs(String droneNumber);
 }

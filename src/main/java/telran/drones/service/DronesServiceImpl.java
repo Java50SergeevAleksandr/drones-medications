@@ -16,7 +16,6 @@ import telran.drones.api.PropertiesNames;
 import telran.drones.dto.*;
 import telran.drones.dto.reflections.DroneItemsAmount;
 import telran.drones.dto.reflections.DroneNumber;
-import telran.drones.dto.reflections.MedicationCode;
 import telran.drones.exceptions.*;
 
 import telran.drones.model.*;
@@ -47,17 +46,20 @@ public class DronesServiceImpl implements DronesService {
 	private int maxCapacity;
 
 	@Scheduled(timeUnit = TimeUnit.MILLISECONDS, fixedDelayString = "${" + PropertiesNames.PERIODIC_DELTA_MILLIS_UNIT
-			+ ":1000}")
+			+ ":2000}")
 	@Transactional(readOnly = false)
 	void periodicTask() {
 		List<Drone> listOfDrones = droneRepo.findAll();
-		listOfDrones.stream().forEach(d -> executeTask(d));
+		log.trace("{} drones registered", listOfDrones.size());
+		listOfDrones.forEach(this::executeTask);
 	}
 
 	private void executeTask(Drone d) {
-		log.debug("periodic status on drone : {}", d);
 		State currentState = d.getState();
 		int currentBatteryCapacity = d.getBatteryCapacity();
+
+		log.debug("periodic status on drone: {}, battery capacity: {}, state: {}", d.getNumber(),
+				currentBatteryCapacity, currentState);
 
 		if (currentState == State.IDLE && currentBatteryCapacity < maxCapacity) {
 			chargeBattery(d, currentState, currentBatteryCapacity);
@@ -72,8 +74,6 @@ public class DronesServiceImpl implements DronesService {
 		log.debug("execute chargeBattery on drone : {}", d);
 		int newBatteryCapacity = currentBatteryCapacity + capacityDeltaPerTimeUnit;
 		d.setBatteryCapacity(Math.min(maxCapacity, newBatteryCapacity));
-		droneRepo.save(d);
-
 		EventLog eventLog = new EventLog(LocalDateTime.now(), d.getNumber(), currentState, newBatteryCapacity, null);
 		logRepo.save(eventLog);
 		log.debug("saved log: {}", eventLog);
@@ -85,9 +85,8 @@ public class DronesServiceImpl implements DronesService {
 		d.setBatteryCapacity(Math.max(0, newBatteryCapacity));
 		State newState = statesMachine.get(currentState);
 		d.setState(newState);
-		droneRepo.save(d);
 		String lastMedication = logRepo.findLastMedicationCode(d.getNumber());
-		log.debug("LastMedicationCode string : {}", lastMedication);
+		log.debug("LastMedicationCode: {}", lastMedication);
 
 		if (newState == State.DELIVERED) {
 			lastMedication = null;
@@ -97,6 +96,17 @@ public class DronesServiceImpl implements DronesService {
 				lastMedication);
 		logRepo.save(eventLog);
 		log.debug("saved log: {}", eventLog);
+	}
+
+	@Override
+	public List<EventLogDto> checkHistoryLogs(String droneNumber) {
+		if (!droneRepo.existsById(droneNumber)) {
+			throw new DroneNotFoundException();
+		}
+
+		List<EventLog> logs = logRepo.findByDroneNumber(droneNumber);
+		log.debug("drone {} has {} logs", droneNumber, logs.size());
+		return logs.stream().map(EventLog::build).toList();
 	}
 
 	@Override
@@ -159,8 +169,8 @@ public class DronesServiceImpl implements DronesService {
 			throw new DroneNotFoundException();
 		}
 		log.debug("drone exists: {}", droneNumber);
-		List<MedicationCode> codes = logRepo.findByDroneNumber(droneNumber);
-		List<String> res = codes.stream().map(MedicationCode::getMedicationCode).toList();
+		List<EventLog> codes = logRepo.findByDroneNumber(droneNumber);
+		List<String> res = codes.stream().map(EventLog::getMedicationCode).toList();
 
 		if (res.isEmpty()) {
 			log.warn("list of Medication Items for droneNumber{} is emty", droneNumber);

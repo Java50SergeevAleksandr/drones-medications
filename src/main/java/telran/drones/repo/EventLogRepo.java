@@ -6,12 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import telran.drones.dto.reflections.DroneItemsAmount;
-import telran.drones.dto.reflections.MedicationCode;
 import telran.drones.model.EventLog;
 
 public interface EventLogRepo extends JpaRepository<EventLog, Long> {
+	List<EventLog> findByDroneNumber(String droneNumber);
+	//List<MedicationCode> findByDroneNumber(String droneNumber);
 
-	List<MedicationCode> findByDroneNumber(String droneNumber);
+	EventLog findFirst1ByDroneNumberOrderByTimestampDesc(String number);
 
 	@Query("""
 			select medicationCode from EventLog where droneNumber =:droneNumber order by id desc limit 1
