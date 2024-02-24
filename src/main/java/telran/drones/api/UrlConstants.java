@@ -9,4 +9,5 @@ public interface UrlConstants {
 	String AVAILABLE_DRONES = DRONES + "/available";
 	String DRONE_BATTERY_CAPACITY = DRONES + "/battery/";
 	String DRONES_AMOUNT_ITEMS = DRONES + "/amount/items";
+	String DRONE_HISTORY_LOGS = DRONES + "/logs/";
 }

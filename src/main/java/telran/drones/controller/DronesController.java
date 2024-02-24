@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import telran.drones.api.UrlConstants;
 import telran.drones.dto.DroneDto;
 import telran.drones.dto.DroneMedication;
+import telran.drones.dto.EventLogDto;
 import telran.drones.dto.reflections.DroneItemsAmount;
 import telran.drones.service.DronesService;
 
@@ -57,5 +58,12 @@ public class DronesController {
 	List<DroneItemsAmount> checkDronesMedItems() {
 		log.debug("checkDronesMedItems controller");
 		return dronesService.checkDroneLoadedItemAmounts();
+	}
+
+	@GetMapping(UrlConstants.DRONE_HISTORY_LOGS + "{" + UrlConstants.DRONE_NUMBER + "}")
+	List<EventLogDto> checkHistoryLogs(@PathVariable(UrlConstants.DRONE_NUMBER) String droneNumber) {
+		log.debug("checkHistoryLogs controller for drone {}", droneNumber);
+		return dronesService.checkHistoryLogs(droneNumber);
+
 	}
 }

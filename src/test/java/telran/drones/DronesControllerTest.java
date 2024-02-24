@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +26,9 @@ import telran.drones.api.ServiceExceptionMessages;
 import telran.drones.api.UrlConstants;
 import telran.drones.dto.DroneDto;
 import telran.drones.dto.DroneMedication;
+import telran.drones.dto.EventLogDto;
 import telran.drones.dto.ModelType;
+import telran.drones.dto.State;
 import telran.drones.dto.reflections.DroneItemsAmount;
 import telran.drones.exceptions.*;
 import telran.exceptions.controller.DronesExceptionsController;
@@ -64,6 +67,7 @@ class DronesControllerTest {
 	private static final String URL_ITEMS_AMOUNT = HOST + UrlConstants.DRONES_AMOUNT_ITEMS;
 	static final String URL_DRONE_REGISTER = HOST + UrlConstants.DRONES;
 	private static final String URL_DRONE_LOAD = HOST + UrlConstants.LOAD_DRONE;
+	private static final String URL_HISTORY_LOGS = HOST + UrlConstants.DRONE_HISTORY_LOGS + DRONE_NUMBER_1;
 
 	DroneDto droneDto1 = new DroneDto(DRONE_NUMBER_1, ModelType.Cruiserweight);
 	DroneDtoWrongEnum droneDtoWrongFields = new DroneDtoWrongEnum(new String(new char[1000]), "wrongType");
@@ -80,6 +84,24 @@ class DronesControllerTest {
 			DronesValidationErrorMessages.WRONG_MEDICATION_CODE };
 	String[] errorMessagesDroneMedicationMissingFields = { DronesValidationErrorMessages.EMPTY_DRONE_NUMBER_MESSAGE,
 			DronesValidationErrorMessages.EMPTY_MEDICATION_CODE, };
+
+	@Test
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.CHECK_LOGS_NORMAL)
+	void checkHistoryLogs_normalFlow_success() throws Exception {
+		EventLogDto[] expectedLogs = {
+				new EventLogDto(LocalDateTime.now(), DRONE_NUMBER_1, MEDICATION_CODE, State.LOADING, 100),
+				new EventLogDto(LocalDateTime.now(), DRONE_NUMBER_1, MEDICATION_CODE, State.LOADED, 98), };
+		when(dronesService.checkHistoryLogs(DRONE_NUMBER_1)).thenReturn(List.of(expectedLogs));
+		String response = getMethodWithResponse(URL_HISTORY_LOGS);
+		assertEquals(mapper.writeValueAsString(expectedLogs), response);
+	}
+
+	@Test
+	@DisplayName(CONTROLLER_TEST + TestDisplayNames.CHECK_LOGS_DRONE_NOT_FOUND)
+	void checkHistoryLogs_notFound_exception() throws Exception {
+		when(dronesService.checkHistoryLogs(DRONE_NUMBER_1)).thenThrow(new DroneNotFoundException());
+		mockMvc.perform(get(URL_HISTORY_LOGS)).andExpect(status().isNotFound());
+	}
 
 	@Test
 	@DisplayName(CONTROLLER_TEST + TestDisplayNames.CHECK_BATTERY_LEVEL_DRONE_NOT_FOUND)
